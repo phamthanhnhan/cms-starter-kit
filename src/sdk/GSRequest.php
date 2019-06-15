@@ -29,7 +29,7 @@ class GSRequest
 
     private $apiKey;
     private $userKey;
-	private $secretKey;
+    private $secret;
     private $params; //GSObject
     private $useHTTPS;
     private $apiDomain = self::DEFAULT_API_DOMAIN;
@@ -40,22 +40,20 @@ class GSRequest
         GSRequest::$cafile = realpath(dirname(__FILE__) . "/cacert.pem");
     }
 
-	/**
-	 * Constructs a request using an apiKey and secretKey.
-	 * You must provide a user ID (UID) of the tage user.
-	 * Suitable for calling our old REST API
-	 *
-	 * @param string   $apiKey
-	 * @param string   $secret
-	 * @param string   $apiMethod the api method (including namespace) to call. for example: socialize.getUserInfo
-	 *                            If namespaces is not supplied "socialize" is assumed
-	 * @param GSObject $params    the request parameters
-	 * @param bool     $useHTTPS  useHTTPS set this to true if you want to use HTTPS.
-	 * @param string   $userKey   userKey A key of an admin user with extra permissions.
-	 *                            If this parameter is provided, then the secretKey parameter is assumed to be the admin user's secret key and not the site's secret key.
-	 *
-	 * @throws \Exception
-	 */
+    /**
+     * Constructs a request using an apiKey and secretKey.
+     * You must provide a user ID (UID) of the tage user.
+     * Suitable for calling our old REST API
+     *
+     * @param apiKey
+     * @param secretKey
+     * @param apiMethod the api method (including namespace) to call. for example: socialize.getUserInfo
+     * If namespaces is not supplied "socialize" is assumed
+     * @param params the request parameters
+     * @param useHTTPS useHTTPS set this to true if you want to use HTTPS.
+     * @param userKey userKey A key of an admin user with extra permissions.
+     * If this parameter is provided, then the secretKey parameter is assumed to be the admin user's secret key and not the site's secret key.
+     */
     public function __construct($apiKey, $secret, $apiMethod, $params = null, $useHTTPS = false, $userKey = null)
     {
         if (!isset($apiMethod) || strlen($apiMethod) == 0)
@@ -105,7 +103,8 @@ class GSRequest
 
     /**
      * Sets the domain used for making API calls. This method provides the option to override the default domain "gigya.com" and specify an alternative data center to be used.
-     * @param string $apiDomain - the domain of the data center to be used. For example: "eu1.gigya.com" for Europe data center.
+     * Parameters:
+     *    $apiDomain - the domain of the data center to be used. For example: "eu1.gigya.com" for Europe data center.
      */
     public function setAPIDomain($apiDomain)
     {
@@ -138,12 +137,6 @@ class GSRequest
 
     /**
      * Send the request synchronously
-	 *
-	 * @param $timeout
-	 *
-	 * @return GSResponse
-	 *
-	 * @throws \Exception
      */
     public function send($timeout = null)
     {
@@ -200,69 +193,41 @@ class GSRequest
         }
     }
 
-	/**
-	 * @param string   $method
-	 * @param string   $domain
-	 * @param string   $path
-	 * @param GSObject $params
-	 * @param string   $token
-	 * @param string   $secret
-	 * @param bool     $useHTTPS
-	 * @param          $timeout
-	 * @param string   $userKey
-	 *
-	 * @return bool|string
-	 *
-	 * @throws Exception
-	 */
     private function sendRequest($method, $domain, $path, $params, $token, $secret, $useHTTPS = false, $timeout = null, $userKey = null)
     {
         $params->put("sdk", "php_" . GSRequest::version);
-
-        /* Prepare query params */
-        $protocol = $useHTTPS || empty($secret) ? "https" : "http";
+        //prepare query params
+        $protocol = $useHTTPS || !empty($secret) ? "https" : "http";
         $resourceURI = $protocol . "://" . $domain . $path;
 
-        /* UTC timestamp */
+        //UTC timestamp.
         $timestamp = (string)time();
 
-        /* Timestamp in milliseconds */
+        //timestamp in milliseconds
         $nonce = ((string)SigUtils::currentTimeMillis()) . rand();
-        $httpMethod = $method;
+        $httpMethod = "POST";
 
         if ($userKey) {
-            $params->put("userKey", $userKey);
-        }
-
-        if (!empty($secret)) {
             $params->put("apiKey", $token);
+            $params->put("userKey", $userKey);
             $params->put("timestamp", $timestamp);
             $params->put("nonce", $nonce);
 
-            /* Signature */
+            //signature
             $signature = self::getOAuth1Signature($secret, $httpMethod, $resourceURI, $useHTTPS, $params);
             $params->put("sig", $signature);
         } else {
-            $params->put("oauth_token", $token);
+            $params->put("secret", $secret);
+            $params->put("apiKey", $token);
         }
 
-        /* Get rest response */
+        //get rest response.
         $res = $this->curl($resourceURI, $params, $timeout);
         return $res;
     }
-
-	/**
-	 * @param string $url
-	 * @param GSObject $params
-	 * @param $timeout
-	 *
-	 * @return bool|string
-	 *
-	 * @throws Exception
-	 */
+    
     private function curl($url, $params, $timeout = null)
     {
-    	$postData = array();
         foreach ($params->getKeys() as $key) {
             $value = $params->getString($key);
             $postData[$key] = $value;
@@ -319,9 +284,7 @@ class GSRequest
 
     /**
      * Converts a GSObject to a query string
-	 *
-     * @param GSObject $params
-	 *
+     * @param params
      * @return string
      */
     public static function buildQS($params)
@@ -348,16 +311,10 @@ class GSRequest
         return SigUtils::calcSignature($baseString, $key);
     }
 
-	/**
-	 * @param string $httpMethod
-	 * @param string $url
-	 * @param bool $isSecureConnection
-	 * @param GSObject $requestParams
-	 *
-	 * @return string
-	 */
     private static function calcOAuth1BaseString($httpMethod, $url, $isSecureConnection, $requestParams)
     {
+
+
         $normalizedUrl = "";
         $u = parse_url($url);
         $protocol = strtolower($u["scheme"]);

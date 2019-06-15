@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Created by PhpStorm.
+ * User: Yaniv Aran-Shamir
+ * Date: 5/26/16
+ * Time: 2:05 PM
+ */
+
+
 namespace Gigya\CmsStarterKit\fieldMapping;
 
 use Gigya\CmsStarterKit\GigyaApiHelper;
@@ -45,22 +53,16 @@ abstract class GigyaUpdater
      */
     public function __construct($cmsValuesArray, $gigyaUid, $path, $apiHelper)
     {
-        $this->cmsArray = (!empty($cmsValuesArray)) ? $cmsValuesArray : array();
+        $this->cmsArray = $cmsValuesArray;
         $this->gigyaUid = $gigyaUid;
         $this->path     = (string) $path;
         $this->mapped   = ! empty($this->path);
         $this->apiHelper = $apiHelper;
     }
 
-	/**
-	 * @throws FieldMappingException
-	 * @throws \Exception
-	 * @throws \Gigya\CmsStarterKit\sdk\GSApiException
-	 * @throws \Gigya\CmsStarterKit\sdk\GSException
-	 */
     public function updateGigya()
     {
-		$this->retrieveFieldMappings();
+        $this->retrieveFieldMappings();
         $this->callCmsHook();
         $this->gigyaArray = $this->createGigyaArray();
         $this->callSetAccountInfo();
@@ -146,19 +148,16 @@ abstract class GigyaUpdater
      */
     abstract protected function getMappingFromCache();
 
-	/**
-	 * @throws FieldMappingException
-	 * @throws \Exception
-	 */
     protected function retrieveFieldMappings()
     {
+
         $conf = $this->getMappingFromCache();
         if (false === $conf) {
             $mappingJson = file_get_contents($this->path);
             if (false === $mappingJson) {
                 $err     = error_get_last();
                 $message = "Could not retrieve field mapping configuration file. message was:" . $err['message'];
-				throw new \Exception($message);
+                throw new \Exception("$message");
             }
             $conf = new Conf($mappingJson);
             $this->setMappingCache($conf);
@@ -166,36 +165,26 @@ abstract class GigyaUpdater
         $this->cmsMappings = $conf->getCmsKeyed();
     }
 
-	/**
-	 * @return array
-	 */
     protected function createGigyaArray()
     {
         $gigyaArray = array();
         foreach ($this->cmsArray as $key => $value) {
             /** @var ConfItem $conf */
             $confs = $this->cmsMappings[$key];
-			foreach ($confs as $conf)
-			{
-				$value = $this->castVal($value, $conf);
-				if (!is_null($value))
-				{
-					$this->assignArrayByPath($gigyaArray, $conf->getGigyaName(), $value);
-				}
+            foreach ($confs as $conf) {
+                $value       = $this->castVal($value, $conf);
+                if(!is_null($value)) {
+                  $this->assignArrayByPath($gigyaArray, $conf->getGigyaName(), $value);
+                }
             }
         }
 
         return $gigyaArray;
     }
 
-	/**
-	 * @throws \Exception
-	 * @throws \Gigya\CmsStarterKit\sdk\GSApiException
-	 * @throws \Gigya\CmsStarterKit\sdk\GSException
-	 */
     protected function callSetAccountInfo()
     {
-		$this->apiHelper->updateGigyaAccount($this->gigyaUid, $this->gigyaArray);
+        $this->apiHelper->updateGigyaAccount($this->gigyaUid, $this->gigyaArray['profile'], $this->gigyaArray['data']);
     }
 
     /**
@@ -215,21 +204,12 @@ abstract class GigyaUpdater
             case "int":
                 return (int) $val;
                 break;
-			case "boolean":
             case "bool":
                 if (is_string($val)) {
                     $val = strtolower($val);
                 }
                 return filter_var($val, FILTER_VALIDATE_BOOLEAN);
                 break;
-			case 'date':
-				if (!preg_match('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|(\+|-)\d{2}(:?\d{2})?)/', $val)) {
-					$datetime = new \DateTime($val);
-					// Return date in format ISO 8601 (https://en.wikipedia.org/wiki/ISO_8601)
-					$val = $datetime->format('c');
-				}
-				return $val;
-				break;
             default:
                 return $val;
                 break;
@@ -250,4 +230,5 @@ abstract class GigyaUpdater
 
         $arr = $value;
     }
+
 }

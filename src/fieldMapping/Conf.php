@@ -33,11 +33,9 @@ class Conf
 
     protected function buildKeyedArrays($array)
     {
-		$cmsKeyedArray   = array();
-		$gigyaKeyedArray = array();
-
-		foreach ($array as $confItem)
-		{
+        $cmsKeyedArray = array();
+        $gigyaKeyedArray = array();
+        foreach ($array as $confItem) {
             $cmsKey = $confItem['cmsName'];
             $gigyaKey = $confItem['gigyaName'];
             $direction = isset($confItem['direction']) ? $confItem['direction'] : "g2cms";
@@ -55,7 +53,6 @@ class Conf
                     break;
             }
         }
-
         $this->gigyaKeyed = $gigyaKeyedArray;
         $this->cmsKeyed   = $cmsKeyedArray;
     }
@@ -79,8 +76,6 @@ class Conf
         return $this->mappingConf;
     }
 
-	public function __toString()
-	{
-		return json_encode(get_object_vars($this));
-	}
+
+
 }

@@ -1,6 +1,17 @@
 <?php
 
+/**
+ *
+ * Created by PhpStorm.
+ * User: Yaniv Aran-Shamir
+ * Date: 5/29/16
+ * Time: 4:47 PM
+ */
+
 namespace Gigya\CmsStarterKit\fieldMapping;
+use Gigya\CmsStarterKit\fieldMapping\CmsUpdaterException;
+use Gigya\CmsStarterKit\fieldMapping\Conf;
+use Gigya\CmsStarterKit\fieldMapping\ConfItem;
 
 abstract class CmsUpdater
 {
@@ -17,24 +28,21 @@ abstract class CmsUpdater
     private $path;
 
     /**
-     * CmsUpdater constructor
-	 *
-	 * @param \Gigya\CmsStarterKit\User\GigyaUser $gigyaAccount
-	 * @param string                              $mappingFilePath
+     * CmsUpdater constructor.
+     * @param \Gigya\CmsStarterKit\User\GigyaUser $gigyaAccount
      */
     public function __construct($gigyaAccount, $mappingFilePath)
     {
         $this->gigyaUser = $gigyaAccount;
         $this->path      = (string)$mappingFilePath;
-        $this->mapped    = !empty($this->path);
+        $this->mapped    = ! empty($this->path);
     }
 
-	/**
-	 * @param mixed $cmsAccount
-	 * @param       $cmsAccountSaver
-	 *
-	 * @throws \Gigya\CmsStarterKit\fieldMapping\CmsUpdaterException
-	 */
+    /**
+     * @param mixed $cmsAccount
+     *
+     * @throws \Exception
+     */
     public function updateCmsAccount(&$cmsAccount, $cmsAccountSaver = null)
     {
         if (!isset($this->gigyaMapping)) {
@@ -60,9 +68,6 @@ abstract class CmsUpdater
 
     abstract protected function saveCmsAccount(&$cmsAccount, $cmsAccountSaver);
 
-	/**
-	 * @throws \Gigya\CmsStarterKit\fieldMapping\CmsUpdaterException
-	 */
     public function retrieveFieldMappings()
     {
         if (file_exists($this->path)) {
@@ -116,9 +121,6 @@ abstract class CmsUpdater
             case "varchar":
                 $value = (string)$value;
                 break;
-			case "bool":
-				$value = boolval($value); /* PHP 5.5+ */
-				break;
         }
 
         return $value;
@@ -171,4 +173,6 @@ abstract class CmsUpdater
     {
         $this->gigyaMapping = $gigyaMapping;
     }
+
+
 }

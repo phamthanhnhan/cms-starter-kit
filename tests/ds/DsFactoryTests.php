@@ -7,15 +7,15 @@
  */
 
 use Gigya\CmsStarterKit\ds\DsFactory;
-use Gigya\CmsStarterKit\GigyaApiHelper;
 
 
-class DsFactoryTests extends PHPUnit_Framework_TestCase
+class DsFactoryTests extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var DsFactory
      */
     private $factory;
+
 
     public function testStringQuery()
     {
@@ -36,6 +36,8 @@ class DsFactoryTests extends PHPUnit_Framework_TestCase
         $this->assertEquals($expectedQry, $qry);
 
     }
+
+
 
     public function testFromOid()
     {
@@ -58,9 +60,10 @@ class DsFactoryTests extends PHPUnit_Framework_TestCase
 
     }
 
+
     protected function setUp()
     {
-        $apiHelper = new GigyaApiHelper("apiKey", "appKey", "appSecret", "us1.gigya.com");
+        $apiHelper = new \Gigya\CmsStarterKit\GigyaApiHelper("apiKey", "appKey", "appSecret", "us1.gigya.com");
         $this->factory = new DsFactory($apiHelper);
     }
 
@@ -72,4 +75,5 @@ class DsFactoryTests extends PHPUnit_Framework_TestCase
 
         return $method;
     }
+
 }

@@ -26,9 +26,10 @@ class GSObject
         $this->map = array();
         if (!empty($json)) {
 
-            /* Parse JSON string */
+            //parse json string.
             if (gettype($json) == 'string') {
                 $obj = json_decode($json, false);
+
 
                 if ($obj == null) {
                     throw new GSException();

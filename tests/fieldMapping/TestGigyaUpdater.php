@@ -8,6 +8,7 @@
 
 namespace Gigya\CmsStarterKit\fieldMapping;
 
+
 use Gigya\CmsStarterKit\GigyaApiHelper;
 
 class TestGigyaUpdater extends \PHPUnit_Framework_TestCase
@@ -19,27 +20,17 @@ class TestGigyaUpdater extends \PHPUnit_Framework_TestCase
 
     public function testUpdateGigya()
     {
-        $expectedData = array(
-            'profile' => array(
-                'gender' => 'f'
-            ),
-            'data' => array(
-                'test1' => 'some value',
-                'test' => array('deep' => array('deep' => array('deep' => 'deep value')))
-            )
-        );
-        $uid = '12345';
-
-        $this->helper->expects($this->once())->method('updateGigyaAccount')->with($uid, $expectedData);
-
+        $expectedProfile = array("gender" => "f");
+        $expectedData = array("test1" => "some value", "test" => array("deep" => array("deep" => array("deep" => "deep value"))));
         $cmsArray = array(
-            'custom2' => 'some value',
-            'gender' => 'f',
-            'custom3' => 'deep value'
+            "custom2" => "some value",
+            "gender" => "f",
+            "custom3" => "deep value"
         );
-        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'fieldMapping.json';
-
-        /** @var \Gigya\CmsStarterKit\fieldMapping\GigyaUpdater $updater */
+        $uid = "12345";
+        $path = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "resources" . DIRECTORY_SEPARATOR
+            . "fieldMapping.json";
+        $this->helper->expects($this->once())->method("updateGigyaAccount")->with($uid, $expectedProfile, $expectedData);
         $updater = $this->getMockBuilder(GigyaUpdater::class)
             ->setConstructorArgs(array($cmsArray, $uid, $path, $this->helper))
             ->setMethods(array('callCmsHook', 'setMappingCache', 'getMappingFromCache'))
