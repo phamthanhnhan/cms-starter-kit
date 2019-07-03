@@ -204,7 +204,7 @@
 						unset($paramsArray[$jsonObject]);
 					elseif (is_array($paramsArray[$jsonObject]))
 					{
-						$paramsArray[$jsonObject] = array_map('strval', $paramsArray[$jsonObject]);
+						array_walk_recursive($paramsArray[$jsonObject], function (&$value) { $value = strval($value); });
 						$paramsArray[$jsonObject] = json_encode($paramsArray[$jsonObject]);
 					}
 				}
