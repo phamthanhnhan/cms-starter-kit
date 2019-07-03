@@ -15,12 +15,20 @@ class GSResponse
     private $errorMessage = null;
     private $rawData = "";
     private $data; //GSObject
+	/**
+	 * @var GSObject
+	 */
     private static $errorMsgDic;
+	/**
+	 * @var GSObject
+	 */
     private $params = null;
     private $method = null;
     private $traceLog = null;
 
-
+	/**
+	 * @throws \Exception
+	 */
     public static function Init()
     {
         self::$errorMsgDic = new GSObject();
@@ -99,7 +107,18 @@ class GSResponse
         return $this->data->getArray($key);
     }
 
-    /* C'tor */
+	/**
+	 * GSResponse constructor.
+	 *
+	 * @param string $method
+	 * @param $responseText
+	 * @param $params
+	 * @param $errorCode
+	 * @param $errorMessage
+	 * @param $traceLog
+	 *
+	 * @throws \Exception
+	 */
     public function __construct($method, $responseText = null, $params = null, $errorCode = null, $errorMessage = null, $traceLog = null)
     {
         $this->data = new GSObject();
